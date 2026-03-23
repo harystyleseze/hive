@@ -150,9 +150,7 @@ check my balance
 - Node.js 18+
 - 3 Hedera testnet accounts ([portal.hedera.com](https://portal.hedera.com))
 - HBAR from the testnet faucet ([portal.hedera.com/faucet](https://portal.hedera.com/faucet)) — Orchestrator needs ~5 HBAR
-- OpenAI API key (or Groq — free, set `OPENAI_MODEL=llama-3.3-70b-versatile` with `@ai-sdk/groq`)
-
-> **No OpenAI key yet?** The dashboard works fully without one — monitor loop, HBAR payments, HCS logging, and risk scoring all run with zero LLM. Only the `/chat` page requires an API key.
+- **LLM API key** — OpenAI (`OPENAI_API_KEY=sk-...`) **or** Groq free tier (`GROQ_API_KEY=gsk_...` at [console.groq.com](https://console.groq.com))
 
 ### 1. Install
 
@@ -183,8 +181,13 @@ MARKET_AGENT_PRIVATE_KEY=302e...
 RISK_AGENT_ACCOUNT_ID=0.0.ZZZZZ
 RISK_AGENT_PRIVATE_KEY=302e...
 
-# OpenAI
+# LLM — choose one:
+# Option A: OpenAI
 OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o
+# Option B: Groq (free tier — https://console.groq.com)
+# GROQ_API_KEY=gsk_...
+# OPENAI_MODEL=llama-3.3-70b-versatile
 
 # HOL Registry (get at https://hol.org/registry/dashboard)
 REGISTRY_BROKER_API_KEY=rbk_...
@@ -219,7 +222,6 @@ AUTO_PROTECT_THRESHOLD=85
 REBALANCE_THRESHOLD=65
 SCHEDULED_TX_THRESHOLD_HBAR=100
 BONZO_LENDING_POOL_ID=0.0.4999355
-OPENAI_MODEL=gpt-4o
 HEDERA_MAX_TX_FEE_HBAR=2
 AUTONOMOUS_MODE=false
 AUTO_REBALANCE_AMOUNT_HBAR=5
@@ -280,7 +282,7 @@ src/
 │   │   │   ├── market/route.ts      # Market Analyst HTTP endpoint
 │   │   │   └── risk/route.ts        # Risk Assessor HTTP endpoint
 │   │   ├── approve/route.ts         # Approve / reject action cards
-│   │   ├── chat/route.ts            # Orchestrator LLM endpoint (GPT-4o + Bonzo tools)
+│   │   ├── chat/route.ts            # Orchestrator LLM endpoint (OpenAI or Groq + Bonzo tools)
 │   │   ├── dashboard/route.ts       # Dashboard state (GET snapshot / PATCH toggles)
 │   │   ├── hcs-inbox/route.ts       # HCS-10 inbox — GET status, POST to poll + process
 │   │   ├── monitor/route.ts         # 30s autonomous cycle: inbox → discover → pay → analyze → log

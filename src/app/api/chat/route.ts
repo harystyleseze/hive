@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import { createGroq } from "@ai-sdk/groq";
 import { streamText, stepCountIs } from "ai";
 import { orchestratorTools } from "@/lib/agents/orchestrator-tools";
 import { getBonzoTools } from "@/lib/bonzo/plugin";
@@ -7,11 +8,19 @@ import { config } from "@/lib/config";
 
 export const maxDuration = 60;
 
+function getModel() {
+  if (process.env.GROQ_API_KEY) {
+    const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+    return groq(config.openaiModel);
+  }
+  return openai(config.openaiModel);
+}
+
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-    model: openai(config.openaiModel),
+    model: getModel(),
     system: ORCHESTRATOR_SYSTEM_PROMPT,
     messages,
     tools: { ...orchestratorTools, ...getBonzoTools() },
