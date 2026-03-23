@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --background: 228 84% 5%;
+  --foreground: 210 40% 93%;
+  --card: 225 65% 7%;
+  --card-foreground: 210 40% 93%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 50% 10%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 225 47% 11%;
+  --muted-foreground: 217 20% 52%;
+  --accent: 220 40% 14%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 222 30% 14%;
+  --input: 222 30% 14%;
+  --ring: 160 84% 39%;
+  --radius: 0.625rem;
+  --glow-primary: 0 0 20px hsla(160, 84%, 39%, 0.15);
+  --glow-primary-strong: 0 0 30px hsla(160, 84%, 39%, 0.25);
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, hsla(160, 84%, 39%, 0.04), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, hsla(220, 80%, 40%, 0.03), transparent);
+}
+
+* { border-color: hsl(var(--border)); }
+
+.glass-card {
+  background: hsla(225, 65%, 7%, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsla(222, 30%, 20%, 0.5);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  border-color: hsla(160, 84%, 39%, 0.2);
+  box-shadow: var(--glow-primary);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s ease-out both; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, hsla(225,47%,11%,0.4) 0%, hsla(225,47%,16%,0.6) 40%, hsla(225,47%,11%,0.4) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px currentColor; }
+  50%       { box-shadow: 0 0 12px currentColor, 0 0 4px currentColor; }
+}
+.animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+
+.hover-lift { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 25px hsla(0,0%,0%,0.3), var(--glow-primary); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsla(222,30%,20%,0.6); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsla(217,20%,40%,0.8); }
