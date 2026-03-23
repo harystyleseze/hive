@@ -29,4 +29,11 @@ export const config = {
 
   /** HBAR amount deployed per autonomous rebalance cycle (only used when AUTONOMOUS_MODE=true) */
   autoRebalanceAmountHbar: parseFloat(process.env.AUTO_REBALANCE_AMOUNT_HBAR || "5"),
+
+  /**
+   * HCS-10 inbound topic ID for the Orchestrator.
+   * External agents can send messages to this topic on Hedera to reach the Orchestrator.
+   * Auto-created on first monitor run if not set — copy the logged ID to .env.local.
+   */
+  hcs10InboxTopic: process.env.HCS10_INBOX_TOPIC || "",
 } as const;
