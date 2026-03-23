@@ -1,6 +1,6 @@
 # Hive — Multi-Agent DeFi Economy on Hedera
 
-Hive is an autonomous multi-agent economy where AI agents **discover, hire, and pay each other in HBAR** to collaboratively manage DeFi strategy on Hedera. Every agent decision is logged permanently on-chain via HCS.
+Hive is an autonomous multi-agent economy where AI agents **discover, hire, and pay each other in HBAR** to collaboratively manage DeFi strategy on Hedera. Every agent decision is logged permanently on-chain via Hedera Consensus Service (HCS)
 
 ---
 
@@ -15,11 +15,12 @@ Three autonomous agents coordinate without human intervention:
 | **Risk Assessor** | Portfolio risk scoring + rebalance signals | 0.1 HBAR per cycle |
 
 Every 30 seconds the Orchestrator:
-1. **Discovers** agents via HOL Registry (agent-to-agent discovery, not hardcoded)
-2. **Pays** Market Analyst 0.1 HBAR on-chain → receives market data
-3. **Pays** Risk Assessor 0.1 HBAR on-chain → receives risk score
-4. **Executes** Bonzo Finance operations (real testnet deposits/withdrawals)
-5. **Logs** every decision to HCS with full reasoning — permanent, auditable, on Hashscan
+1. **Checks HCS-10 inbox** — reads any messages sent by external agents to the Orchestrator's public HCS topic
+2. **Discovers** agents via HOL Registry (agent-to-agent discovery, not hardcoded)
+3. **Pays** Market Analyst 0.1 HBAR on-chain → receives market data
+4. **Pays** Risk Assessor 0.1 HBAR on-chain → receives risk score
+5. **Executes** Bonzo Finance operations (real testnet deposits/withdrawals)
+6. **Logs** every decision to HCS with full reasoning — permanent, auditable, on Hashscan
 
 ---
 
@@ -28,31 +29,34 @@ Every 30 seconds the Orchestrator:
 Hive has two independent execution paths sharing the same state and Hedera infrastructure:
 
 ```
-User ↔ Dashboard / Chat
-              │
-   ┌──────────┴────────────────┐
+External Agents ──► HCS-10 Inbox Topic (Hedera)
+                           │
+User ↔ Dashboard / Chat    │ (polled each cycle)
+              │             │
+   ┌──────────┴─────────────┴──┐
    │                           │
-Monitor Loop (every 30s)    Chat Agent (on demand)
-Zero LLM                    GPT-4o / Groq
-   │                           │
-   ├─ HOL Registry discovery   ├─ hireMarketAnalyst tool → 0.1 HBAR
-   ├─ Pay Market Analyst        ├─ hireRiskAssessor tool → 0.1 HBAR
-   ├─ Pay Risk Assessor         ├─ getBonzoMarkets tool
-   ├─ Score portfolio risk      └─ proposeBonzoDeposit tool
-   │                                        │
-   │  risk ≥ 85:                            ▼
-   │    auto-protect withdrawal        Action Card
-   │  65 ≤ risk < 85:              (human approves on
-   │    AUTONOMOUS_MODE=true ──►    dashboard, or auto-
-   │      execute deposit           executed in monitor
-   │    AUTONOMOUS_MODE=false ──►   autonomous mode)
+Monitor Loop (every 30s)     Chat Agent (on demand)
+                         GPT-4o / Groq
+   │                            │
+   ├─ Poll HCS-10 inbox         ├─ hireMarketAnalyst tool → 0.1 HBAR
+   ├─ HOL Registry discovery    ├─ hireRiskAssessor tool → 0.1 HBAR
+   ├─ Pay Market Analyst        ├─ getBonzoMarkets tool
+   ├─ Pay Risk Assessor         └─ proposeBonzoDeposit tool
+   ├─ Score portfolio risk                  │
+   │                                        ▼
+   │  risk ≥ 85:                       Action Card
+   │    auto-protect withdrawal    (human approves, or
+   │  65 ≤ risk < 85:               Schedule Service for
+   │    AUTONOMOUS_MODE=true ──►    deposits > 100 HBAR)
+   │      execute deposit
+   │    AUTONOMOUS_MODE=false ──►
    │      create action card
    │
    └────────────── shared in-memory store ─────────────
                   positions · hcsLog · riskMetrics
                              │
                       Hedera Network
-              HBAR transfers · HCS · Bonzo Finance
+              HBAR transfers · HCS · HCS-10 · Bonzo Finance
               HOL Registry · Mirror Node · Schedule Service
 ```
 
@@ -80,8 +84,6 @@ The agent decides and executes without waiting.
 - Chat proposals still create action cards (the chat path is unchanged)
 - Hedera Schedule Service is still enforced for large chat deposits — even autonomous mode respects Hedera's protocol-level co-sign requirement
 
-> **When to use:** Set `AUTONOMOUS_MODE=true` for demos and testing. Keep `false` for any scenario involving real capital — human oversight is non-negotiable in production.
-
 ---
 
 ### Hedera Primitives Used
@@ -90,10 +92,11 @@ The agent decides and executes without waiting.
 |-----------|---------|
 | **HBAR transfers** | Agent-to-agent micropayments (0.1 HBAR per hire) |
 | **HCS (Hedera Consensus Service)** | Immutable audit trail — every decision, reasoning, and payment |
+| **HCS-10** | Orchestrator exposes a public inbound topic — external agents can message it directly on Hedera |
 | **Hedera Schedule Service** | Large deposits proposed as scheduled txs requiring user co-sign |
 | **Bonzo Finance Plugin** | Real DeFi lending operations on testnet via `@bonzofinancelabs/hak-bonzo-plugin` |
-| **HOL Registry** | Agent discovery — Orchestrator finds agents by capability, not by hardcoded address |
-| **Mirror Node** | Balance checks, EVM address resolution |
+| **HOL Registry** | Agent discovery — Orchestrator finds agents by capability |
+| **Mirror Node** | Balance checks, EVM address resolution, HCS-10 inbox polling |
 
 ---
 
@@ -125,9 +128,14 @@ get bonzo markets
 → Calls `bonzo_market_data_tool` — real APYs from Bonzo testnet contracts
 
 ```
+propose a 150 HBAR deposit into the best vault
+```
+→ Creates a Hedera Scheduled Transaction (>100 HBAR threshold) — requires your co-sign before funds move
+
+```
 propose a 50 HBAR deposit into the best vault
 ```
-→ Creates a Hedera Scheduled Transaction to the Bonzo lending pool (`0.0.4999355`), requires your co-sign
+→ Creates an action card on the dashboard — approve on dashboard to execute (below Schedule Service threshold)
 
 ```
 check my balance
@@ -184,6 +192,10 @@ REGISTRY_BROKER_API_KEY=rbk_...
 # Leave blank — auto-created on first monitor run
 HCS_DECISION_LOG_TOPIC=
 
+# HCS-10 inbound topic for external agent messaging (auto-created on first monitor run)
+# Copy the logged topic ID here after first run, then re-run register-agents.ts
+HCS10_INBOX_TOPIC=
+
 # App URL (for agent registration endpoints)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
@@ -221,6 +233,20 @@ npx tsx scripts/register-agents.ts
 
 This registers all 3 agents with their capability tags so the Orchestrator can discover them via `findAgentsByCapability()`.
 
+### 3b. Set up HCS-10 inbox (after first `npm run dev`)
+
+On first monitor cycle, the app auto-creates the HCS-10 inbox topic and logs the ID:
+```
+[HCS-10] Inbox topic created: 0.0.XXXXX — add HCS10_INBOX_TOPIC=0.0.XXXXX to .env.local
+```
+
+Copy that ID to `.env.local`, then re-run agent registration so the HOL Registry knows the Orchestrator's HCS-10 endpoint:
+```bash
+npx tsx scripts/register-agents.ts
+```
+
+External agents can then message the Orchestrator by submitting to topic `0.0.XXXXX` on Hedera — messages appear in the HCS Feed with a `HCS-10` badge.
+
 ### 4. Run
 
 ```bash
@@ -236,7 +262,10 @@ Open [http://localhost:3000](http://localhost:3000)
 ✓ HCS Feed shows MONITOR_CYCLE entry with Hashscan link ↗
 ✓ Risk score appears in the Risk Monitor panel
 ✓ HCS topic ID shown in feed header — click to verify on Hashscan
+✓ Console logs HCS-10 inbox topic: copy HCS10_INBOX_TOPIC=0.0.XXXXX to .env.local
+✓ Re-run: npx tsx scripts/register-agents.ts (adds HCS-10 topic to HOL Registry entry)
 ✓ Open /chat → try "hire the market analyst"
+✓ GET /api/hcs-inbox → shows inbox topic ID + Hashscan link
 ```
 
 ---
@@ -253,7 +282,8 @@ src/
 │   │   ├── approve/route.ts         # Approve / reject action cards
 │   │   ├── chat/route.ts            # Orchestrator LLM endpoint (GPT-4o + Bonzo tools)
 │   │   ├── dashboard/route.ts       # Dashboard state (GET snapshot / PATCH toggles)
-│   │   ├── monitor/route.ts         # 30s autonomous cycle: discover → pay → analyze → log
+│   │   ├── hcs-inbox/route.ts       # HCS-10 inbox — GET status, POST to poll + process
+│   │   ├── monitor/route.ts         # 30s autonomous cycle: inbox → discover → pay → analyze → log
 │   │   └── withdraw/route.ts        # Position withdrawal
 │   ├── chat/page.tsx                # Chat interface
 │   ├── dashboard/page.tsx           # Agent network, risk panel, HCS feed
@@ -282,6 +312,7 @@ src/
     ├── hedera/
     │   ├── client.ts                # Hedera SDK client singleton
     │   ├── hcs.ts                   # HCS topic auto-create + message submit
+    │   ├── hcs10-inbox.ts           # HCS-10 inbound topic creation + Mirror Node polling
     │   ├── hts.ts                   # HBAR transfers (agent payments)
     │   ├── network.ts               # Network URLs derived from HEDERA_NETWORK
     │   └── schedule.ts              # Hedera Schedule Service (large deposit proposals)
@@ -308,3 +339,5 @@ src/
 **Large deposit protection**: Any deposit > 100 HBAR is proposed as a `ScheduleCreateTransaction`. The UI shows the pending action card; the user must click Approve (which submits `ScheduleSignTransaction`) before funds move.
 
 **HCS topic auto-creation**: If `HCS_DECISION_LOG_TOPIC` is not set, a new topic is created on first run and all subsequent messages go to that topic. The topic ID is surfaced in the dashboard header with a direct Hashscan link.
+
+**HCS-10 inbound topic**: The Orchestrator exposes a public HCS topic as its HCS-10 inbox (memo: `hcs-10:0:86400:1`). Any external agent on Hedera can submit a message to this topic — the monitor loop polls it every 30 seconds via the Mirror Node REST API and logs each message to the HCS decision feed with a `HCS10_MESSAGE` type. The inbox topic ID is registered in the HOL Registry as `hcs10_inbound_topic` so external agents can discover it by capability search. Auto-created on first run — copy the logged ID to `HCS10_INBOX_TOPIC` in `.env.local`, then re-run `scripts/register-agents.ts`.

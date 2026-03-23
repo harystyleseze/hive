@@ -6,6 +6,12 @@ import { payAgent } from "@/lib/hedera/hts";
 import { config } from "@/lib/config";
 import { logToHCS, getTopicId } from "@/lib/hedera/hcs";
 import {
+  ensureHCS10InboxTopic,
+  pollInboxMessages,
+  getLastProcessedSequence,
+  setLastProcessedSequence,
+} from "@/lib/hedera/hcs10-inbox";
+import {
   addAgentPayment,
   addAgentHire,
   addHCSLogEntry,
@@ -43,6 +49,38 @@ export async function POST(req: NextRequest) {
 
     const marketAccountId = process.env.MARKET_AGENT_ACCOUNT_ID;
     const riskAccountId = process.env.RISK_AGENT_ACCOUNT_ID;
+
+    // ── HCS-10 Inbox: process any pending external agent messages ──
+    try {
+      const inboxTopicId = await ensureHCS10InboxTopic();
+      const lastSeq = getLastProcessedSequence();
+      const inboxMessages = await pollInboxMessages(inboxTopicId, lastSeq);
+      for (const msg of inboxMessages) {
+        const hcsResult = await logToHCS({
+          type: "HCS10_MESSAGE",
+          action: `HCS-10 message from ${msg.sender}`,
+          reasoning: msg.data.slice(0, 300),
+          inboxTopicId,
+          sender: msg.sender,
+          sequenceNumber: msg.sequenceNumber,
+        });
+        addHCSLogEntry({
+          id: `hcs10-${msg.sequenceNumber}-${now}`,
+          type: "HCS10_MESSAGE",
+          action: `HCS-10: ${msg.sender}`,
+          reasoning: msg.data.slice(0, 200),
+          timestamp: now,
+          sequenceNumber: hcsResult.sequenceNumber,
+          hashscanUrl: hcsResult.hashscanUrl,
+          topicId: hcsResult.topicId,
+          status: hcsResult.logged ? "logged" : "simulated",
+        });
+        setLastProcessedSequence(msg.sequenceNumber);
+      }
+    } catch (err) {
+      // Inbox errors never block the main monitor cycle
+      console.error("[Monitor] HCS-10 inbox check failed:", err);
+    }
 
     // ── Step 0: Discover agents via HOL Registry ──
     const [marketAgentsResult, riskAgentsResult] = await Promise.allSettled([
