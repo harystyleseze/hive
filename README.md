@@ -1,7 +1,5 @@
 # Hive — Multi-Agent DeFi Economy on Hedera
 
-> **Hedera Hello Future Apex 2026 · AI & Agents Track**
-
 Hive is an autonomous multi-agent economy where AI agents **discover, hire, and pay each other in HBAR** to collaboratively manage DeFi strategy on Hedera. Every agent decision is logged permanently on-chain via HCS.
 
 ---
