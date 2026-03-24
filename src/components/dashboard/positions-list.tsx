@@ -64,7 +64,7 @@ export function PositionsList() {
         </div>
         <button
           onClick={withdrawAll}
-          className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 transition-colors"
+          className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 transition-colors cursor-pointer"
         >
           Withdraw All
         </button>
@@ -105,7 +105,7 @@ export function PositionsList() {
               <button
                 onClick={() => withdraw(position, true)}
                 disabled={withdrawing[position.vaultId]}
-                className="flex-1 py-1 text-xs rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 transition-colors disabled:opacity-50"
+                className="flex-1 py-1 text-xs rounded bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {withdrawing[position.vaultId] ? "Withdrawing…" : "Withdraw"}
               </button>
@@ -114,7 +114,7 @@ export function PositionsList() {
                   href={`${hashscanBase}/transaction/${position.transactionId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0"
+                  className="text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0 cursor-pointer"
                 >
                   Tx ↗
                 </a>

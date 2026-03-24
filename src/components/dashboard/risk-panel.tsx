@@ -73,7 +73,7 @@ export function RiskPanel() {
         <h3 className="text-sm font-semibold text-[hsl(var(--foreground))]">Risk Monitor</h3>
         <button
           onClick={triggerMonitor}
-          className="text-xs px-2.5 py-1 rounded-lg bg-[hsl(var(--muted))]/50 hover:bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors border border-[hsl(var(--border))]"
+          className="text-xs px-2.5 py-1 rounded-lg bg-[hsl(var(--muted))]/50 hover:bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors border border-[hsl(var(--border))] cursor-pointer"
         >
           Run Now
         </button>
@@ -145,7 +145,7 @@ export function RiskPanel() {
                       href={card.hashscanUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[10px] text-emerald-400 hover:text-emerald-300"
+                      className="text-[10px] text-emerald-400 hover:text-emerald-300 cursor-pointer"
                     >
                       Schedule ↗
                     </a>
@@ -161,13 +161,13 @@ export function RiskPanel() {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => approveAction(card)}
-                    className="flex-1 py-1 text-xs rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-colors"
+                    className="flex-1 py-1 text-xs rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => rejectAction(card)}
-                    className="flex-1 py-1 text-xs rounded bg-[hsl(var(--muted))]/30 hover:bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))] transition-colors"
+                    className="flex-1 py-1 text-xs rounded bg-[hsl(var(--muted))]/30 hover:bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))] transition-colors cursor-pointer"
                   >
                     Reject
                   </button>

@@ -19,10 +19,22 @@ function getModel() {
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
+  // useChat (TextStreamChatTransport) sends UIMessages with `parts`.
+  // streamText expects CoreMessages with `content`.
+  const coreMessages = (messages as Array<Record<string, unknown>>).map((msg) => {
+    if (msg.content !== undefined) return msg;
+    const parts = (msg.parts as Array<{ type: string; text?: string }>) ?? [];
+    const content = parts
+      .filter((p) => p.type === "text")
+      .map((p) => p.text ?? "")
+      .join("");
+    return { role: msg.role, content };
+  });
+
   const result = streamText({
     model: getModel(),
     system: ORCHESTRATOR_SYSTEM_PROMPT,
-    messages,
+    messages: coreMessages,
     tools: { ...orchestratorTools, ...getBonzoTools() },
     stopWhen: stepCountIs(10),
     temperature: 0.1,

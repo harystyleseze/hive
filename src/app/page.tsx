@@ -41,13 +41,13 @@ export default function Home() {
         <div className="flex gap-3 justify-center">
           <Link
             href="/dashboard"
-            className="px-6 py-2.5 text-sm font-medium bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-xl transition-colors"
+            className="px-6 py-2.5 text-sm font-medium bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-xl transition-colors cursor-pointer"
           >
             View Dashboard
           </Link>
           <Link
             href="/chat"
-            className="px-6 py-2.5 text-sm font-medium bg-[hsl(var(--muted))]/30 hover:bg-[hsl(var(--muted))]/50 text-[hsl(var(--foreground))] border border-[hsl(var(--border))] rounded-xl transition-colors"
+            className="px-6 py-2.5 text-sm font-medium bg-[hsl(var(--muted))]/30 hover:bg-[hsl(var(--muted))]/50 text-[hsl(var(--foreground))] border border-[hsl(var(--border))] rounded-xl transition-colors cursor-pointer"
           >
             Chat with Orchestrator
           </Link>
