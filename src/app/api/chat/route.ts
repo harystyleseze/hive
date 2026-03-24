@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { createGroq } from "@ai-sdk/groq";
 import { streamText, stepCountIs } from "ai";
+import type { ModelMessage } from "ai";
 import { orchestratorTools } from "@/lib/agents/orchestrator-tools";
 import { getBonzoTools } from "@/lib/bonzo/plugin";
 import { ORCHESTRATOR_SYSTEM_PROMPT } from "@/lib/system-prompt";
@@ -21,14 +22,14 @@ export async function POST(req: Request) {
 
   // useChat (TextStreamChatTransport) sends UIMessages with `parts`.
   // streamText expects CoreMessages with `content`.
-  const coreMessages = (messages as Array<Record<string, unknown>>).map((msg) => {
-    if (msg.content !== undefined) return msg;
+  const coreMessages = (messages as Array<Record<string, unknown>>).map((msg): ModelMessage => {
+    if (msg.content !== undefined) return msg as unknown as ModelMessage;
     const parts = (msg.parts as Array<{ type: string; text?: string }>) ?? [];
     const content = parts
       .filter((p) => p.type === "text")
       .map((p) => p.text ?? "")
       .join("");
-    return { role: msg.role, content };
+    return { role: msg.role as "user" | "assistant", content };
   });
 
   const result = streamText({
