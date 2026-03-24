@@ -44,7 +44,7 @@ export function HCSFeed() {
             href={`${hashscanBase}/topic/${topicId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-mono"
+            className="text-xs text-emerald-400 hover:text-emerald-300 font-mono cursor-pointer"
           >
             {topicId} ↗
           </a>
@@ -96,7 +96,7 @@ export function HCSFeed() {
                   href={entry.hashscanUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] text-emerald-400 hover:text-emerald-300 mt-1 inline-block"
+                  className="text-[10px] text-emerald-400 hover:text-emerald-300 mt-1 inline-block cursor-pointer"
                 >
                   View on Hashscan ↗
                 </a>

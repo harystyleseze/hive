@@ -132,7 +132,7 @@ export function AgentNetwork() {
                       href={hire.payment.hashscanUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-400 hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300 cursor-pointer"
                     >
                       ↗
                     </a>

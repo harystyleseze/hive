@@ -51,7 +51,7 @@ export function ChatPanel() {
                 <button
                   key={s}
                   onClick={() => setInputValue(s)}
-                  className="text-left text-xs px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 hover:bg-[hsl(var(--muted))]/40 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+                  className="text-left text-xs px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/20 hover:bg-[hsl(var(--muted))]/40 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors cursor-pointer"
                 >
                   {s}
                 </button>
@@ -138,7 +138,7 @@ export function ChatPanel() {
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
-            className="px-4 py-2 text-sm bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             Send
           </button>

@@ -50,6 +50,11 @@ export async function POST(req: NextRequest) {
     const marketAccountId = process.env.MARKET_AGENT_ACCOUNT_ID;
     const riskAccountId = process.env.RISK_AGENT_ACCOUNT_ID;
 
+    // ── Start HOL Registry discovery in background (non-blocking) ──
+    // These run in parallel with Hedera work so the 3s timeout doesn't add to cycle time.
+    const marketDiscoveryPromise = findAgentsByCapability("market-data", 1);
+    const riskDiscoveryPromise = findAgentsByCapability("risk-assessment", 1);
+
     // ── HCS-10 Inbox: process any pending external agent messages ──
     try {
       const inboxTopicId = await ensureHCS10InboxTopic();
@@ -81,20 +86,6 @@ export async function POST(req: NextRequest) {
       // Inbox errors never block the main monitor cycle
       console.error("[Monitor] HCS-10 inbox check failed:", err);
     }
-
-    // ── Step 0: Discover agents via HOL Registry ──
-    const [marketAgentsResult, riskAgentsResult] = await Promise.allSettled([
-      findAgentsByCapability("market-data", 1),
-      findAgentsByCapability("risk-assessment", 1),
-    ]);
-    const marketUaid =
-      marketAgentsResult.status === "fulfilled"
-        ? (marketAgentsResult.value[0]?.uaid ?? null)
-        : null;
-    const riskUaid =
-      riskAgentsResult.status === "fulfilled"
-        ? (riskAgentsResult.value[0]?.uaid ?? null)
-        : null;
 
     // ── Step 1: Hire Market Analyst (pay 0.1 HBAR) ──
     let marketPayment;
@@ -158,7 +149,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Step 3: Log monitoring cycle to HCS ──
+    // ── Step 3: Collect HOL Registry discovery results (resolved in parallel with Hedera work) ──
+    const [marketAgentsResult, riskAgentsResult] = await Promise.allSettled([
+      marketDiscoveryPromise,
+      riskDiscoveryPromise,
+    ]);
+    const marketUaid =
+      marketAgentsResult.status === "fulfilled"
+        ? (marketAgentsResult.value[0]?.uaid ?? null)
+        : null;
+    const riskUaid =
+      riskAgentsResult.status === "fulfilled"
+        ? (riskAgentsResult.value[0]?.uaid ?? null)
+        : null;
+
+    // ── Log monitoring cycle to HCS ──
     const hcsResult = await logToHCS({
       type: "MONITOR_CYCLE",
       action: `Monitor cycle: risk ${riskAssessment.compositeRisk}/100 (${riskAssessment.riskGrade})`,

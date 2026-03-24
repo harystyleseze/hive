@@ -95,7 +95,7 @@ export function Header() {
                 : "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 transition-colors cursor-pointer"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-mono">{state.hcsMessageCount}</span>
@@ -122,7 +122,7 @@ export function Header() {
           {/* Pause monitor toggle */}
           <button
             onClick={toggleMonitorPaused}
-            className={`hidden sm:block px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+            className={`hidden sm:block px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
               state?.monitorPaused
                 ? "bg-yellow-500/15 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
                 : "bg-[hsl(var(--muted))]/50 border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
@@ -134,7 +134,7 @@ export function Header() {
           {/* Auto-protect toggle */}
           <button
             onClick={toggleAutoProtect}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
               state?.autoProtectEnabled
                 ? "bg-orange-500/15 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
                 : "bg-[hsl(var(--muted))]/50 border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
